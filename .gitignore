@@ -1,0 +1,28 @@
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log*
+yarn.lock
+package-lock.json
+
+# Misc
+sandbox
+node_modules
+coverage
+*.xml
+
+# Dist
+*.gz
+dist/
+
+.idea
+.DS_Store
+
+# hide build files
+
+build
+static/production/
+static/sandbox/
