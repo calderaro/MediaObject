@@ -80,7 +80,7 @@ export default class MediaObject {
   }
   playing () {
     this.duration = this.media.duration
-    this.raf = window.requestAnimationFrame(this.draw)
+    this.raf = window.requestAnimationFrame(() => this.draw())
     this.emit('playing', this.media)
   }
   timeupdate () {
@@ -97,6 +97,6 @@ export default class MediaObject {
       : this.asset.type === 'audio' && this.asset.img ? this.poster
       : null
     if (media) this.cctx.drawImage(media, 0, 0, 854, 480)
-    if (this.asset.type === 'video') window.requestAnimationFrame(this.draw)
+    if (this.asset.type === 'video') window.requestAnimationFrame(() => this.draw())
   }
 }
