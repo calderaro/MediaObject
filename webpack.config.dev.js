@@ -2,13 +2,14 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
+  mode: 'development',
   entry: [
     'webpack-hot-middleware/client',
     path.join(__dirname, './src/examples/app.js')
   ],
   output: {
     path: path.resolve('lib'),
-    filename: 'mediaobject.js',
+    filename: 'app.js',
     publicPath: '/lib/'
   },
   plugins: [

@@ -1,102 +1,102 @@
 import {window, document} from 'global'
 import mitt from 'mitt'
-import pdfobj from 'pdfjs-dist'
+import pdfo from './pdf'
 
-export default class MediaObject {
-  constructor () {
+const MediaObject = {
+  init: function ({placeholderImg}) {
+    this.placeholderImg = placeholderImg
     this.emitter = mitt()
     this.on = this.emitter.on
-    this.emit = this.emitter.emit
-
-    this.media = null
-    this.raf = null
+    this.container = document.createElement('div')
     this.canvas = document.createElement('canvas')
-    this.canvas.width = 854
-    this.canvas.height = 480
     this.cctx = this.canvas.getContext('2d')
     this.video = document.createElement('video')
-    this.video.style.display = 'none'
     this.image = document.createElement('img')
-    this.poster = document.createElement('img')
-    this.pdf = document.createElement('div')
+    this.pdf = pdfo()
+    this.media = null
+    this.raf = null
+    this.asset = null
+    this.duration = null
+    this.currentTime = null
 
-    document.body.appendChild(this.video)
-
+    this.container.appendChild(this.canvas)
+    this.canvas.width = 854
+    this.canvas.height = 480
+    this.canvas.style.background = '#000'
+    this.video.style.display = 'none'
     this.video.addEventListener('canplay', () => this.canplay())
     this.video.addEventListener('timeupdate', () => this.timeupdate())
     this.video.addEventListener('ended', () => this.ended())
     this.video.addEventListener('playing', () => this.playing())
-    this.image.addEventListener('load', () => this.playing())
-    this.poster.addEventListener('load', () => this.draw())
-  }
-  load (asset = this.asset) {
+    this.image.addEventListener('load', () => this.draw())
+    this.pdf.on('done', () => this.draw())
+    document.body.appendChild(this.video)
+  },
+  load: function (asset) {
     this.cctx.clearRect(0, 0, 854, 480)
     if (!asset) return
-    this.pause()
-    if (asset.type === 'audio') {
-      if (this.asset && this.asset.id === asset.id) {
-        this.media.play()
-      } else {
-        this.media = this.video
-        this.poster.src = asset.img
-        this.video.src = '/static/img/' + asset.src
-      }
-    }
-    if (asset.type === 'video') {
-      if (this.asset && this.asset.id === asset.id) {
-        this.media.play()
-      } else {
-        this.media = this.video
-        this.video.src = '/static/img/' + asset.src
-      }
+    if (this.asset && this.asset.id === asset.id) return this.play()
+    this.video.pause()
+    this.asset = asset
+    if (asset.type === 'video' || asset.type === 'audio') {
+      this.media = this.video
+      this.video.src = asset.src
+      this.image.src = asset.img || this.placeholderImg
     }
     if (asset.type === 'image') {
       this.media = this.image
-      this.image.src = '/static/img/' + asset.src
+      this.image.src = asset.src
     }
     if (asset.type === 'pdf') {
-      this.pdf = pdfobj.getDocument('/static/img/' + asset.src)
-        .then(pdf => pdf.getPage(1).then(page => {
-          var viewport = page.getViewport(1);
-          page.render({canvasContext: this.cctx, viewport: viewport})
-        }))
       this.media = this.pdf
+      this.pdf.load(asset.src)
     }
-    this.asset = asset
-    this.emit('play', this.media)
-  }
-  canplay () {
-    this.emit('canplay', this.media)
-  }
-  play () {
-    this.duration = this.media.duration
-    this.media.play()
-    this.emit('play', this.media)
-  }
-  pause () {
+  },
+  canplay: function () {
+    this.emitter.emit('canplay')
+  },
+  play: function () {
+    if (!this.asset || (this.asset.type !== 'video' && this.asset.type !== 'audio')) return
+    this.duration = this.video.duration
+    this.emitter.emit('play')
+    this.video.play()
+    if (this.asset.type === 'video') {
+      this.raf = window.requestAnimationFrame(() => this.draw())
+    }
+  },
+  pause: function () {
+    if (!this.asset || this.asset.type !== 'video' || this.asset.type !== 'audio') return
     window.cancelAnimationFrame(this.raf)
     this.video.pause()
-    this.emit('pause', this.media)
+    this.emitter.emit('pause')
+  },
+  playing: function () {
+    this.duration = this.video.duration
+    this.emitter.emit('playing')
+  },
+  timeupdate: function () {
+    this.currentTime = this.video.currentTime
+    this.emitter.emit('timeupdate')
+  },
+  ended: function () {
+    this.emitter.emit('ended')
+  },
+  draw: function () {
+    const type = this.asset.type
+    if (type === 'video') {
+      this.cctx.drawImage(this.video, 0, 0, 854, 480)
+      this.raf = window.requestAnimationFrame(() => this.draw())
+    } else if (type === 'pdf') {
+      const margin = (this.canvas.width / 2) - (this.pdf.width / 2)
+      this.cctx.drawImage(this.pdf.canvas, 0, 0, this.pdf.width, this.pdf.height, margin, 0, this.pdf.width, this.pdf.height)
+    } else {
+      this.cctx.drawImage(this.image, 0, 0, 854, 480)
+    }
   }
-  playing () {
-    this.duration = this.media.duration
-    this.raf = window.requestAnimationFrame(() => this.draw())
-    this.emit('playing', this.media)
-  }
-  timeupdate () {
-    this.currentTime = this.media.currentTime
-    this.emit('timeupdate', this.media)
-  }
-  ended () {
-    this.emit('ended', this.media)
-  }
-  draw () {
-    const media =
-      this.asset.type === 'video' ? this.media
-      : this.asset.type === 'image'  ? this.media
-      : this.asset.type === 'audio' && this.asset.img ? this.poster
-      : null
-    if (media) this.cctx.drawImage(media, 0, 0, 854, 480)
-    if (this.asset.type === 'video') window.requestAnimationFrame(() => this.draw())
-  }
+}
+
+export default function createMediaObject (options) {
+  const mo = Object.create(MediaObject)
+  mo.init(options)
+  return mo
 }

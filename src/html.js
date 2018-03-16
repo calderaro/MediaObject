@@ -9,7 +9,7 @@ export default () => `
     </head>
     <body>
       <div id='root'></div>
-      <script type='application/javascript' src='/lib/reactOneInput.js'></script>
+      <script type='application/javascript' src='/lib/app.js'></script>
     </body>
   </html>
 `

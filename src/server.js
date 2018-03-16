@@ -17,6 +17,7 @@ const compiler = webpack(webpackConfig)
 
 app
   .use('/lib', express.static(path.join(__dirname, '../lib')))
+  .use('/static', express.static(path.join(__dirname, '../static')))
   .use(webpackDevMiddleware(compiler, {publicPath: webpackConfig.output.publicPath}))
   .use(webpackHotMiddleware(compiler))
   .get('*', (req, res) => res.status(200).send(html()))
