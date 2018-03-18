@@ -95,7 +95,6 @@ const MediaObject = {
     } else {
       this.cctx.drawImage(this.image, 0, 0, 854, 480)
     }
-    this.drawControls()
   },
   wheel: function (e) {
     e.stopPropagation()
