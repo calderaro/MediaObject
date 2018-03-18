@@ -2,16 +2,18 @@ import PDFJS from 'pdfjs-dist'
 import mitt from 'mitt'
 
 const PDFObject = {
-  init: function () {
-    this.emitter = mitt()
-    this.on = this.emitter.on
-    this.emit = this.emitter.emit
-    this.canvas = document.createElement('canvas')
-    this.cctx = this.canvas.getContext('2d')
-    this.pdf = null
-    this.pages = []
-    this.width = null
-    this.height = null
+  create: function () {
+    const pdfo = Object.create(this)
+    pdfo.emitter = mitt()
+    pdfo.on = pdfo.emitter.on
+    pdfo.emit = pdfo.emitter.emit
+    pdfo.canvas = document.createElement('canvas')
+    pdfo.cctx = pdfo.canvas.getContext('2d')
+    pdfo.pdf = null
+    pdfo.pages = []
+    pdfo.width = null
+    pdfo.height = null
+    return pdfo
   },
   load: function (url) {
     this.getDocument(url).then(pdf => {
@@ -30,7 +32,7 @@ const PDFObject = {
   getPages: function (pdf) {
     return Promise.all(Array.from(Array(pdf.numPages), (a, i) => pdf.getPage(i + 1)))
       .then(pages => Promise.all(pages.map(page => new Promise((resolve, reject) => {
-        const viewport = page.getViewport(1.2);
+        const viewport = page.getViewport(1.44);
         const canvas = document.createElement('canvas')
         canvas.height = viewport.height
         canvas.width = viewport.width
@@ -41,8 +43,9 @@ const PDFObject = {
   render: function (pages) {
     const width = pages[0].width
     const height = pages[0].height
-    this.width = pages[0].width
-    this.height = pages[0].height
+    this.width = width
+    this.height = height
+    this.totalHeight = height * pages.length
     this.canvas.width = width
     this.canvas.height = height * pages.length
     pages.forEach((p, i) => this.cctx.drawImage(p, 0, i * height, width, height))
@@ -51,7 +54,6 @@ const PDFObject = {
 }
 
 export default function createPDFObject () {
-  const pdfo = Object.create(PDFObject)
-  pdfo.init()
+  const pdfo = PDFObject.create()
   return pdfo
 }
