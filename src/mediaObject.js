@@ -12,7 +12,6 @@ const MediaObject = {
     this.cctx = this.canvas.getContext('2d')
     this.video = document.createElement('video')
     this.image = document.createElement('img')
-    this.scrollY = 0
     this.pdf = pdfo()
     this.media = null
     this.raf = null
@@ -32,7 +31,6 @@ const MediaObject = {
     this.image.addEventListener('load', () => this.draw())
     this.pdf.on('done', () => this.draw())
     document.body.appendChild(this.video)
-    this.canvas.addEventListener('wheel', e => this.wheel(e))
   },
   load: function (asset) {
     this.cctx.clearRect(0, 0, 854, 480)
@@ -67,7 +65,7 @@ const MediaObject = {
     }
   },
   pause: function () {
-    if (!this.asset || this.asset.type !== 'video' || this.asset.type !== 'audio') return
+    if (!this.asset || (this.asset.type !== 'video' && this.asset.type !== 'audio')) return
     window.cancelAnimationFrame(this.raf)
     this.video.pause()
     this.emitter.emit('pause')
@@ -84,25 +82,16 @@ const MediaObject = {
     this.emitter.emit('ended')
   },
   draw: function () {
-    this.cctx.clearRect(0, 0, 854, 480)
     const type = this.asset.type
     if (type === 'video') {
       this.cctx.drawImage(this.video, 0, 0, 854, 480)
       this.raf = window.requestAnimationFrame(() => this.draw())
     } else if (type === 'pdf') {
       const margin = (this.canvas.width / 2) - (this.pdf.width / 2)
-      this.cctx.drawImage(this.pdf.canvas, 0, this.scrollY, this.pdf.width, this.pdf.height, margin, 0, this.pdf.width, this.pdf.height)
+      this.cctx.drawImage(this.pdf.canvas, 0, 0, this.pdf.width, this.pdf.height, margin, 0, this.pdf.width, this.pdf.height)
     } else {
       this.cctx.drawImage(this.image, 0, 0, 854, 480)
     }
-  },
-  wheel: function (e) {
-    e.stopPropagation()
-    e.preventDefault()
-    const scroll = this.scrollY + (-1 * e.movementY) * 3
-    if (scroll < 0 || scroll > this.pdf.totalHeight - this.canvas.height) return
-    this.scrollY = scroll
-    this.draw()
   }
 }
 
