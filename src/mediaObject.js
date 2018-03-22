@@ -13,6 +13,7 @@ const MediaObject = {
     this.video = document.createElement('video')
     this.image = document.createElement('img')
     this.pdf = pdfo()
+    this.scrollY = 0
     this.media = null
     this.raf = null
     this.asset = null
@@ -29,6 +30,7 @@ const MediaObject = {
     this.video.addEventListener('ended', () => this.ended())
     this.video.addEventListener('playing', () => this.playing())
     this.image.addEventListener('load', () => this.draw())
+    this.canvas.addEventListener('wheel', e => this.wheel(e))
     this.pdf.on('done', () => this.draw())
     document.body.appendChild(this.video)
   },
@@ -82,16 +84,38 @@ const MediaObject = {
     this.emitter.emit('ended')
   },
   draw: function () {
+    this.cctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     const type = this.asset.type
     if (type === 'video') {
-      this.cctx.drawImage(this.video, 0, 0, 854, 480)
+      this.cctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height)
       this.raf = window.requestAnimationFrame(() => this.draw())
     } else if (type === 'pdf') {
       const margin = (this.canvas.width / 2) - (this.pdf.width / 2)
-      this.cctx.drawImage(this.pdf.canvas, 0, 0, this.pdf.width, this.pdf.height, margin, 0, this.pdf.width, this.pdf.height)
+      this.cctx.drawImage(this.pdf.canvas, 0, this.scrollY, this.pdf.width, this.pdf.height, margin, 0, this.pdf.width, this.pdf.height)
     } else {
-      this.cctx.drawImage(this.image, 0, 0, 854, 480)
+      const imgw = this.image.width
+      const imgh = this.image.height
+
+      if (imgw > imgh) {
+        const nwidth = this.canvas.width
+        const nheight = imgh / imgw * this.canvas.width
+        const margin = (this.canvas.height / 2) - (nheight / 2)
+        this.cctx.drawImage(this.image, 0, margin, nwidth, nheight)
+      } else {
+        const nwidth = imgw / imgh * this.canvas.height
+        const nheight = this.canvas.height
+        const margin = (this.canvas.width / 2) - (nwidth / 2)
+        this.cctx.drawImage(this.image, margin, 0, nwidth, nheight)
+      }
     }
+  },
+  wheel: function (e) {
+    e.stopPropagation()
+    e.preventDefault()
+    const scroll = this.scrollY + (-1 * e.movementY) * 3
+    if (scroll < 0 || scroll > this.pdf.totalHeight - this.canvas.height) return
+    this.scrollY = scroll
+    this.draw()
   }
 }
 
