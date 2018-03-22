@@ -110,6 +110,7 @@ const MediaObject = {
     }
   },
   wheel: function (e) {
+    if (this.asset.type !== 'pdf') return
     e.stopPropagation()
     e.preventDefault()
     const scroll = this.scrollY + (-1 * e.movementY) * 3
