@@ -34,3 +34,7 @@ document.body.appendChild(next)
 mo.load(assets[0])
 
 window.mo = mo
+
+mo.on('muted', e => console.log('muted', e))
+mo.on('volume', e => console.log('volume', e))
+mo.on('seek', e => console.log('seek', e))

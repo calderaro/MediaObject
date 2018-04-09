@@ -117,6 +117,18 @@ const MediaObject = {
     if (scroll < 0 || scroll > this.pdf.totalHeight - this.canvas.height) return
     this.scrollY = scroll
     this.draw()
+  },
+  muted: function (e) {
+    this.video.muted = e
+    this.emitter.emit('muted', e)
+  },
+  volume: function (e) {
+    this.video.volume = e
+    this.emitter.emit('volume', e)
+  },
+  seek: function (e) {
+    this.video.currentTime = e
+    this.emitter.emit('seek', e)
   }
 }
 
