@@ -78,7 +78,7 @@ const MediaObject = {
   },
   timeupdate: function () {
     this.currentTime = this.video.currentTime
-    this.emitter.emit('timeupdate')
+    this.emitter.emit('seek', this.video.currentTime)
   },
   ended: function () {
     this.emitter.emit('ended')
