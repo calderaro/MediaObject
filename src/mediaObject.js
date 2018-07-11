@@ -29,6 +29,7 @@ const MediaObject = {
     this.video.addEventListener('timeupdate', () => this.timeupdate())
     this.video.addEventListener('ended', () => this.ended())
     this.video.addEventListener('playing', () => this.playing())
+    this.video.addEventListener('error', e => console.log(e))
     this.image.addEventListener('load', () => this.draw())
     this.canvas.addEventListener('wheel', e => this.wheel(e))
     this.pdf.on('done', () => this.draw())

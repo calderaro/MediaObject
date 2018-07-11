@@ -2,6 +2,7 @@ import MediaObject from '../mediaObject'
 
 let index = 0
 const assets = [
+  {id: 32312, type: 'pdf', title: 'lol', src: 'https://storage.googleapis.com/inba-storage/inbatk/WTC1PreludeC2.pdf'},
   {id: 125, type: 'image', title: 'audio title', src: 'https://storage.googleapis.com/imjuve-storage/inbatk%2F402px-Mona_Lisa_by_Leonardo_da_Vinci_from_C2RMF_retouched.jpg'},
   {id: 1223, type: 'image', title: 'audio title', src: 'http://localhost:3006/static/large.jpg'},
   {id: 126, type: 'pdf', title: 'pdf title', src: 'http://localhost:3006/static/pdf.pdf'},
